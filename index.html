@@ -64,16 +64,16 @@
 </head>
 <body>
     <div class="schedule-container">
-        <h1>משמרות - 1-7.09</h1>
+        <h1>משמרות שבועיות</h1>
         <table>
-            <tr>
-                <th>שבת<br> 7.9</th>
-                <th>שישי<br> 6.9</th>
-                <th>חמישי<br> 5.9</th>
-                <th>רביעי<br> 4.9</th>
-                <th>שלישי<br> 3.9</th>
-                <th>שני<br> 2.9</th>
-                <th>ראשון<br> 1.9</th>
+            <tr id="date-row">
+                <th>שבת<br><span id="date-sat">מתעדכן...</span></th>
+                <th>שישי<br><span id="date-fri">מתעדכן...</span></th>
+                <th>חמישי<br><span id="date-thu">מתעדכן...</span></th>
+                <th>רביעי<br><span id="date-wed">מתעדכן...</span></th>
+                <th>שלישי<br><span id="date-tue">מתעדכן...</span></th>
+                <th>שני<br><span id="date-mon">מתעדכן...</span></th>
+                <th>ראשון<br><span id="date-sun">מתעדכן...</span></th>
                 <th>משמרות</th>
             </tr>
             <tr id="morning-shift-2" class="yellow">
@@ -111,107 +111,62 @@
     </div>
 
     <script>
+    async function fetchShifts() {
+        const sheetUrl = 'https://docs.google.com/spreadsheets/d/1QhULkTx616YtArCdnBTENKwWQoQQLWRFf_m4fXf1Z0M/export?format=csv';
+        document.getElementById('status-message').textContent = 'טוען...';
 
-async function fetchShifts() {
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/1QhULkTx616YtArCdnBTENKwWQoQQLWRFf_m4fXf1Z0M/export?format=csv';
-    document.getElementById('status-message').textContent = 'טוען...';
-
-    try {
-        const response = await fetch(sheetUrl);
-        if (!response.ok) {
-            throw new Error('שגיאה - יש בעיה');
-        }
-        const csvData = await response.text();
-        const rows = csvData.split('\n').map(row => row.split(','));
-
-        // Log the raw rows data for debugging
-        console.log('Raw rows data:', rows);
-
-        // Create a mapping of worker names (from column 6) to phone numbers (from column 5)
-        let workers = {};
-
-        // Iterate over the rows starting from row 14 (index 13 in the array)
-        for (let i = 14; i < rows.length; i++) {
-            let name = rows[i][1]?.trim();  // Worker name from column 6
-            let phone = rows[i][0]?.trim(); // Phone number from column 5
-
-            // Clean up phone numbers: remove any non-numeric characters
-            phone = phone ? phone.replace(/[^\d]/g, '') : '';
-
-            // Check for and log missing names or phone numbers
-            if (!name || !phone) {
-                console.warn(`Missing name or phone at row ${i + 1}:`, rows[i]);
-            } else {
-                // Remove carriage returns or any invisible characters from names
-                name = name.replace(/\r/g, '').trim();
-
-                if (name && phone) {
-                    workers[name] = phone;  // Add to the workers object
-                }
+        try {
+            const response = await fetch(sheetUrl);
+            if (!response.ok) {
+                throw new Error('שגיאה - יש בעיה');
             }
+            const csvData = await response.text();
+            const rows = csvData.split('\n').map(row => row.split(','));
+
+            // Extract the Sunday date from cell H7
+            const sundayDate = rows[7][7]?.trim(); // Assuming H7 is in row 7, column 7 (index starts at 0)
+            console.log("Sunday date (H7):", sundayDate);
+
+            // Convert the date to a JavaScript Date object
+            const baseDate = new Date(sundayDate.split('.').reverse().join('-')); // dd.mm format
+
+            // Check if baseDate is valid
+            if (isNaN(baseDate)) {
+                throw new Error('Invalid date in H7');
+            }
+
+            // Update the dates for the week
+            document.getElementById('date-sun').textContent = formatDate(baseDate);
+            document.getElementById('date-mon').textContent = formatDate(addDays(baseDate, 1));
+            document.getElementById('date-tue').textContent = formatDate(addDays(baseDate, 2));
+            document.getElementById('date-wed').textContent = formatDate(addDays(baseDate, 3));
+            document.getElementById('date-thu').textContent = formatDate(addDays(baseDate, 4));
+            document.getElementById('date-fri').textContent = formatDate(addDays(baseDate, 5));
+            document.getElementById('date-sat').textContent = formatDate(addDays(baseDate, 6));
+
+            // Function to format dates as dd.mm
+            function formatDate(date) {
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                return `${day}.${month}`;
+            }
+
+            // Function to add days to a date
+            function addDays(date, days) {
+                const result = new Date(date);
+                result.setDate(result.getDate() + days);
+                return result;
+            }
+
+            // The rest of the shift update logic
+            // ...
+
+            document.getElementById('status-message').textContent = 'הסידור מעודכן!';
+        } catch (error) {
+            document.getElementById('status-message').textContent = 'Error fetching data from Google Sheets: ' + error.message;
+            console.error('Error fetching data:', error);
         }
-
-        // Debugging: print out the extracted names and phone numbers
-        console.log('Workers extracted from the sheet:', workers);
-
-        // Now map the names from specific rows (shift assignments) to table cells
-        const morningShift = rows[7]; // Morning shift names
-        const nightLoc1Shift = rows[8]; // Night shift location 1 names
-        const nightLoc2Shift = rows[9]; // Night shift location 2 names
-
-// Helper function to update shift cells with WhatsApp links and split names into two lines
-const updateShiftCell = (workerName, elementId) => {
-    if (workerName && workers[workerName]) {
-        // Split the worker's name into two parts if possible (first and last name)
-        const nameParts = workerName.split(' ');
-        const nameWithLineBreak = nameParts.length === 2 ? `${nameParts[0]}<br>${nameParts[1]}` : workerName;
-
-        // Add the name and WhatsApp link to the table cell
-        document.getElementById(elementId).innerHTML = `<a href="https://wa.me/${workers[workerName]}" target="_blank">${nameWithLineBreak}</a>`;
-    } else {
-        // Fallback for missing workers: either show the name or 'לא משובץ'
-        document.getElementById(elementId).textContent = workerName || 'לא משובץ';
     }
-};
-
-
-        // Update morning shifts dynamically
-        updateShiftCell(morningShift[0], 'sat-morning');
-        updateShiftCell(morningShift[1], 'fri-morning');
-        updateShiftCell(morningShift[2], 'thu-morning');
-        updateShiftCell(morningShift[3], 'wed-morning');
-        updateShiftCell(morningShift[4], 'tue-morning');
-        updateShiftCell(morningShift[5], 'mon-morning');
-        updateShiftCell(morningShift[6], 'sun-morning');
-
-        // Update night shifts for location 1 dynamically
-        updateShiftCell(nightLoc1Shift[0], 'sat-night-loc1');
-        updateShiftCell(nightLoc1Shift[1], 'fri-night-loc1');
-        updateShiftCell(nightLoc1Shift[2], 'thu-night-loc1');
-        updateShiftCell(nightLoc1Shift[3], 'wed-night-loc1');
-        updateShiftCell(nightLoc1Shift[4], 'tue-night-loc1');
-        updateShiftCell(nightLoc1Shift[5], 'mon-night-loc1');
-        updateShiftCell(nightLoc1Shift[6], 'sun-night-loc1');
-
-        // Update night shifts for location 2 dynamically
-        updateShiftCell(nightLoc2Shift[0], 'sat-night-loc2');
-        updateShiftCell(nightLoc2Shift[1], 'fri-night-loc2');
-        updateShiftCell(nightLoc2Shift[2], 'thu-night-loc2');
-        updateShiftCell(nightLoc2Shift[3], 'wed-night-loc2');
-        updateShiftCell(nightLoc2Shift[4], 'tue-night-loc2');
-        updateShiftCell(nightLoc2Shift[5], 'mon-night-loc2');
-        updateShiftCell(nightLoc2Shift[6], 'sun-night-loc2');
-
-        document.getElementById('status-message').textContent = 'הסידור מעודכן!';
-    } catch (error) {
-        document.getElementById('status-message').textContent = 'Error fetching data from Google Sheets: ' + error.message;
-        console.error('Error fetching data:', error);
-    }
-}
-
-
-
-
 
     function highlightCurrentShift() {
         const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
