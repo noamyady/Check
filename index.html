@@ -196,6 +196,7 @@ async function fetchShifts() {
             nextSundayDateStr = rows[6][7]?.trim();    // H7 becomes next week
         } else {
             currentSundayDateStr = rows[6][7]?.trim(); // Default to H7 as current week
+            nextSundayDateStr = null; // No next week
         }
 
         const currentBaseDate = new Date(currentSundayDateStr);
@@ -217,7 +218,7 @@ async function fetchShifts() {
         }
 
         // Update next week dates if valid
-        if (!isNaN(nextBaseDate) && document.getElementById('date-sun-next')) {
+        if (!isNaN(nextBaseDate) && nextSundayDateStr) {
             document.getElementById('next-week-table').style.display = 'block';
             document.getElementById('date-sun-next').textContent = formatDate(nextBaseDate);
             document.getElementById('date-mon-next').textContent = formatDate(addDays(nextBaseDate, 1));
@@ -289,12 +290,12 @@ async function fetchShifts() {
         }
 
         // Handle current week
-        const currentWeekRows = rows[6]?.length > 0 ? [rows[12], rows[13], rows[14]] : [rows[7], rows[8], rows[9]];
+        const currentWeekRows = [rows[7], rows[8], rows[9]];
         updateShiftTable(currentWeekRows, 'current');
 
         // Handle next week if it exists
         if (nextSundayDateStr && !isNaN(nextBaseDate)) {
-            const nextWeekRows = [rows[7], rows[8], rows[9]];
+            const nextWeekRows = [rows[12], rows[13], rows[14]];
             updateShiftTable(nextWeekRows, 'next');
         }
 
