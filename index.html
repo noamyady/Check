@@ -111,6 +111,7 @@
     </div>
 
     <script>
+
 async function fetchShifts() {
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/1QhULkTx616YtArCdnBTENKwWQoQQLWRFf_m4fXf1Z0M/export?format=csv';
     document.getElementById('status-message').textContent = 'Connecting to Google Sheets...';
@@ -126,10 +127,19 @@ async function fetchShifts() {
         // Create a mapping of worker names (from column 6) to phone numbers (from column 5)
         let workers = {};
 
-        // Iterate over the rows starting from row 14 (index 13 in the array)
-        for (let i = 13; i < rows.length; i++) {
+        // Iterate over the rows starting from row 14 (index 13 in the array) and skip the header row
+        for (let i = 14; i < rows.length; i++) {
             const name = rows[i][6]?.trim();  // Worker name from column 6
-            const phone = rows[i][5]?.trim(); // Phone number from column 5
+            let phone = rows[i][5]?.trim(); // Phone number from column 5
+            
+            // Skip rows with invalid data or headers
+            if (name === "רשימת שמות" || phone === "מספר טלפון") {
+                continue; // Skip header row
+            }
+
+            // Clean up any special characters in phone numbers
+            phone = phone.replace(/[^\d]/g, ''); // Remove non-numeric characters
+
             if (name && phone) {
                 workers[name] = phone;  // Add to the workers object
             }
