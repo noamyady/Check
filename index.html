@@ -135,6 +135,9 @@ async function fetchShifts() {
             }
         }
 
+        // Debugging: print out the extracted names and phone numbers
+        console.log('Workers extracted from the sheet:', workers);
+
         // Now map the names from specific rows (shift assignments) to table cells
         const morningShift = rows[7]; // Morning shift names
         const nightLoc1Shift = rows[8]; // Night shift location 1 names
@@ -182,6 +185,7 @@ async function fetchShifts() {
         console.error('Error fetching data:', error);
     }
 }
+
 
 
 
