@@ -175,8 +175,16 @@ async function fetchShifts() {
         const csvData = await response.text();
         const rows = csvData.split('\n').map(row => row.split(','));
 
-        // Check if table elements exist before updating them
-        const workers = extractWorkers(rows);
+        // Extract workers' data (names and phone numbers) from rows
+        let workers = {};
+        for (let i = 17; i < rows.length; i++) {
+            let name = rows[i][1]?.trim();
+            let phone = rows[i][0]?.trim();
+            if (name && phone) {
+                phone = phone.replace(/[^\d]/g, ''); // Clean phone number
+                workers[name] = phone; // Map name to phone number
+            }
+        }
 
         // Extract the Sunday date for the current and next weeks
         let currentSundayDateStr;
@@ -198,22 +206,96 @@ async function fetchShifts() {
         }
 
         // Update current week dates
-        updateDates('current', currentBaseDate);
-        
+        if (document.getElementById('date-sun-current')) {
+            document.getElementById('date-sun-current').textContent = formatDate(currentBaseDate);
+            document.getElementById('date-mon-current').textContent = formatDate(addDays(currentBaseDate, 1));
+            document.getElementById('date-tue-current').textContent = formatDate(addDays(currentBaseDate, 2));
+            document.getElementById('date-wed-current').textContent = formatDate(addDays(currentBaseDate, 3));
+            document.getElementById('date-thu-current').textContent = formatDate(addDays(currentBaseDate, 4));
+            document.getElementById('date-fri-current').textContent = formatDate(addDays(currentBaseDate, 5));
+            document.getElementById('date-sat-current').textContent = formatDate(addDays(currentBaseDate, 6));
+        }
+
         // Update next week dates if valid
-        if (!isNaN(nextBaseDate)) {
+        if (!isNaN(nextBaseDate) && document.getElementById('date-sun-next')) {
             document.getElementById('next-week-table').style.display = 'block';
-            updateDates('next', nextBaseDate);
+            document.getElementById('date-sun-next').textContent = formatDate(nextBaseDate);
+            document.getElementById('date-mon-next').textContent = formatDate(addDays(nextBaseDate, 1));
+            document.getElementById('date-tue-next').textContent = formatDate(addDays(nextBaseDate, 2));
+            document.getElementById('date-wed-next').textContent = formatDate(addDays(nextBaseDate, 3));
+            document.getElementById('date-thu-next').textContent = formatDate(addDays(nextBaseDate, 4));
+            document.getElementById('date-fri-next').textContent = formatDate(addDays(nextBaseDate, 5));
+            document.getElementById('date-sat-next').textContent = formatDate(addDays(nextBaseDate, 6));
+        }
+
+        // Function to format dates as dd.mm
+        function formatDate(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            return `${day}.${month}`;
+        }
+
+        // Function to add days to a date
+        function addDays(date, days) {
+            const result = new Date(date);
+            result.setDate(result.getDate() + days);
+            return result;
+        }
+
+        // Map the names from specific rows (shift assignments) to table cells
+        function updateShiftTable(weekRows, weekType) {
+            const morningShift = weekRows[0]; // Morning shift names
+            const nightLoc1Shift = weekRows[1]; // Night shift location 1 names
+            const nightLoc2Shift = weekRows[2]; // Night shift location 2 names
+
+            const updateShiftCell = (workerName, elementId) => {
+                if (workerName && workers[workerName]) {
+                    const nameParts = workerName.split(' ');
+                    const nameWithLineBreak = nameParts.length === 2 ? `${nameParts[0]}<br>${nameParts[1]}` : workerName;
+                    document.getElementById(elementId).innerHTML = `<a href="https://wa.me/${workers[workerName]}" target="_blank">${nameWithLineBreak}</a>`;
+                } else {
+                    if (document.getElementById(elementId)) {
+                        document.getElementById(elementId).textContent = workerName || 'לא משובץ';
+                    }
+                }
+            };
+
+            // Update morning shifts dynamically
+            updateShiftCell(morningShift[0], `sat-morning-${weekType}`);
+            updateShiftCell(morningShift[1], `fri-morning-${weekType}`);
+            updateShiftCell(morningShift[2], `thu-morning-${weekType}`);
+            updateShiftCell(morningShift[3], `wed-morning-${weekType}`);
+            updateShiftCell(morningShift[4], `tue-morning-${weekType}`);
+            updateShiftCell(morningShift[5], `mon-morning-${weekType}`);
+            updateShiftCell(morningShift[6], `sun-morning-${weekType}`);
+
+            // Update night shifts for location 1 dynamically
+            updateShiftCell(nightLoc1Shift[0], `sat-night-loc1-${weekType}`);
+            updateShiftCell(nightLoc1Shift[1], `fri-night-loc1-${weekType}`);
+            updateShiftCell(nightLoc1Shift[2], `thu-night-loc1-${weekType}`);
+            updateShiftCell(nightLoc1Shift[3], `wed-night-loc1-${weekType}`);
+            updateShiftCell(nightLoc1Shift[4], `tue-night-loc1-${weekType}`);
+            updateShiftCell(nightLoc1Shift[5], `mon-night-loc1-${weekType}`);
+            updateShiftCell(nightLoc1Shift[6], `sun-night-loc1-${weekType}`);
+
+            // Update night shifts for location 2 dynamically
+            updateShiftCell(nightLoc2Shift[0], `sat-night-loc2-${weekType}`);
+            updateShiftCell(nightLoc2Shift[1], `fri-night-loc2-${weekType}`);
+            updateShiftCell(nightLoc2Shift[2], `thu-night-loc2-${weekType}`);
+            updateShiftCell(nightLoc2Shift[3], `wed-night-loc2-${weekType}`);
+            updateShiftCell(nightLoc2Shift[4], `tue-night-loc2-${weekType}`);
+            updateShiftCell(nightLoc2Shift[5], `mon-night-loc2-${weekType}`);
+            updateShiftCell(nightLoc2Shift[6], `sun-night-loc2-${weekType}`);
         }
 
         // Handle current week
         const currentWeekRows = rows[6]?.length > 0 ? [rows[12], rows[13], rows[14]] : [rows[7], rows[8], rows[9]];
-        updateShiftTable(currentWeekRows, 'current', workers);
+        updateShiftTable(currentWeekRows, 'current');
 
         // Handle next week if it exists
         if (nextSundayDateStr && !isNaN(nextBaseDate)) {
             const nextWeekRows = [rows[7], rows[8], rows[9]];
-            updateShiftTable(nextWeekRows, 'next', workers);
+            updateShiftTable(nextWeekRows, 'next');
         }
 
         document.getElementById('status-message').textContent = 'הסידור מעודכן';
@@ -223,125 +305,42 @@ async function fetchShifts() {
     }
 }
 
-function extractWorkers(rows) {
-    let workers = {};
-    for (let i = 17; i < rows.length; i++) {
-        let name = rows[i][1]?.trim();
-        let phone = rows[i][0]?.trim();
-        if (name && phone) {
-            phone = phone.replace(/[^\d]/g, ''); // Clean phone number
-            workers[name] = phone; // Map name to phone number
-        }
-    }
-    return workers;
-}
+    function highlightCurrentShift() {
+        const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
+        const currentHour = now.getHours();
+        const currentDay = now.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+        const columnIndex = 6 - currentDay;
 
-function updateDates(weekType, baseDate) {
-    if (document.getElementById(`date-sun-${weekType}`)) {
-        document.getElementById(`date-sun-${weekType}`).textContent = formatDate(baseDate);
-        document.getElementById(`date-mon-${weekType}`).textContent = formatDate(addDays(baseDate, 1));
-        document.getElementById(`date-tue-${weekType}`).textContent = formatDate(addDays(baseDate, 2));
-        document.getElementById(`date-wed-${weekType}`).textContent = formatDate(addDays(baseDate, 3));
-        document.getElementById(`date-thu-${weekType}`).textContent = formatDate(addDays(baseDate, 4));
-        document.getElementById(`date-fri-${weekType}`).textContent = formatDate(addDays(baseDate, 5));
-        document.getElementById(`date-sat-${weekType}`).textContent = formatDate(addDays(baseDate, 6));
-    }
-}
+        const morningShiftRow = document.getElementById('morning-shift-current');
+        const nightShift1Row = document.getElementById('night-shift-loc1-current');
+        const nightShift2Row = document.getElementById('night-shift-loc2-current');
 
-function formatDate(date) {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    return `${day}.${month}`;
-}
+        // Remove previous highlights
+        const allCells = document.querySelectorAll('td');
+        allCells.forEach(cell => cell.classList.remove('highlight-day', 'highlight-night'));
 
-function addDays(date, days) {
-    const result = new Date(date);
-    result.setDate(result.getDate() + days);
-    return result;
-}
-
-function updateShiftTable(weekRows, weekType, workers) {
-    const morningShift = weekRows[0]; // Morning shift names
-    const nightLoc1Shift = weekRows[1]; // Night shift location 1 names
-    const nightLoc2Shift = weekRows[2]; // Night shift location 2 names
-
-    const updateShiftCell = (workerName, elementId) => {
-        const element = document.getElementById(elementId);
-        if (element) {
-            if (workerName && workers[workerName]) {
-                const nameParts = workerName.split(' ');
-                const nameWithLineBreak = nameParts.length === 2 ? `${nameParts[0]}<br>${nameParts[1]}` : workerName;
-                element.innerHTML = `<a href="https://wa.me/${workers[workerName]}" target="_blank">${nameWithLineBreak}</a>`;
+        if (currentHour >= 7 && currentHour < 19) {
+            morningShiftRow.children[columnIndex].classList.add('highlight');
+        } else {
+            if (currentHour >= 19) {
+                nightShift1Row.children[columnIndex].classList.add('highlight');
+                nightShift2Row.children[columnIndex].classList.add('highlight');
             } else {
-                element.textContent = workerName || 'לא משובץ';
+                nightShift1Row.children[(columnIndex + 1) % 7].classList.add('highlight');
+                nightShift2Row.children[(columnIndex + 1) % 7].classList.add('highlight');
             }
         }
+    }
+
+    window.onload = function() {
+        fetchShifts();
+        highlightCurrentShift();
     };
 
-    // Update morning shifts dynamically
-    updateShiftCell(morningShift[0], `sat-morning-${weekType}`);
-    updateShiftCell(morningShift[1], `fri-morning-${weekType}`);
-    updateShiftCell(morningShift[2], `thu-morning-${weekType}`);
-    updateShiftCell(morningShift[3], `wed-morning-${weekType}`);
-    updateShiftCell(morningShift[4], `tue-morning-${weekType}`);
-    updateShiftCell(morningShift[5], `mon-morning-${weekType}`);
-    updateShiftCell(morningShift[6], `sun-morning-${weekType}`);
-
-    // Update night shifts for location 1 dynamically
-    updateShiftCell(nightLoc1Shift[0], `sat-night-loc1-${weekType}`);
-    updateShiftCell(nightLoc1Shift[1], `fri-night-loc1-${weekType}`);
-    updateShiftCell(nightLoc1Shift[2], `thu-night-loc1-${weekType}`);
-    updateShiftCell(nightLoc1Shift[3], `wed-night-loc1-${weekType}`);
-    updateShiftCell(nightLoc1Shift[4], `tue-night-loc1-${weekType}`);
-    updateShiftCell(nightLoc1Shift[5], `mon-night-loc1-${weekType}`);
-    updateShiftCell(nightLoc1Shift[6], `sun-night-loc1-${weekType}`);
-
-    // Update night shifts for location 2 dynamically
-    updateShiftCell(nightLoc2Shift[0], `sat-night-loc2-${weekType}`);
-    updateShiftCell(nightLoc2Shift[1], `fri-night-loc2-${weekType}`);
-    updateShiftCell(nightLoc2Shift[2], `thu-night-loc2-${weekType}`);
-    updateShiftCell(nightLoc2Shift[3], `wed-night-loc2-${weekType}`);
-    updateShiftCell(nightLoc2Shift[4], `tue-night-loc2-${weekType}`);
-    updateShiftCell(nightLoc2Shift[5], `mon-night-loc2-${weekType}`);
-    updateShiftCell(nightLoc2Shift[6], `sun-night-loc2-${weekType}`);
-}
-
-function highlightCurrentShift() {
-    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
-    const currentHour = now.getHours();
-    const currentDay = now.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
-    const columnIndex = 6 - currentDay;
-
-    const morningShiftRow = document.getElementById('morning-shift-current');
-    const nightShift1Row = document.getElementById('night-shift-loc1-current');
-    const nightShift2Row = document.getElementById('night-shift-loc2-current');
-
-    // Remove previous highlights
-    const allCells = document.querySelectorAll('td');
-    allCells.forEach(cell => cell.classList.remove('highlight-day', 'highlight-night'));
-
-    if (currentHour >= 7 && currentHour < 19) {
-        morningShiftRow.children[columnIndex].classList.add('highlight');
-    } else {
-        if (currentHour >= 19) {
-            nightShift1Row.children[columnIndex].classList.add('highlight');
-            nightShift2Row.children[columnIndex].classList.add('highlight');
-        } else {
-            nightShift1Row.children[(columnIndex + 1) % 7].classList.add('highlight');
-            nightShift2Row.children[(columnIndex + 1) % 7].classList.add('highlight');
-        }
-    }
-}
-
-window.onload = function() {
-    fetchShifts();
-    highlightCurrentShift();
-};
-
-setInterval(() => {
-    fetchShifts();
-    highlightCurrentShift();
-}, 300000);
+    setInterval(() => {
+        fetchShifts();
+        highlightCurrentShift();
+    }, 300000);
     </script>
 </body>
 </html>
