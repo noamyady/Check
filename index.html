@@ -300,7 +300,7 @@ async function fetchShifts() {
             updateShiftCell(nightLoc2Shift[6], `sun-night-loc2-${weekType}`);
         }
 
-        document.getElementById('status-message').textContent = 'הסידור מעודכן';
+        document.getElementById('status-message').textContent = 'מעודכן';
     } catch (error) {
         document.getElementById('status-message').textContent = 'Error fetching data from Google Sheets: ' + error.message;
         console.error('Error fetching data:', error);
