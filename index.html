@@ -124,7 +124,7 @@
             const rows = csvData.split('\n').map(row => row.split(','));
 
             // Extract the Sunday date from cell H7 in ISO format (YYYY-MM-DD)
-            const sundayDateStr = rows[7][7]?.trim(); // Assuming H7 is in row 7, column 7
+            const sundayDateStr = rows[6][7]?.trim(); // Assuming H7 is in row 7, column 7
             console.log("Sunday date (H7):", sundayDateStr);
 
             // Create a JavaScript Date object directly from the ISO date
