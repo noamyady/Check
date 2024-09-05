@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>משמרות שבועיות</title>
+    <title>סידור משמרות</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -296,7 +296,7 @@ async function fetchShifts() {
             updateShiftTable(nextWeekRows, 'next');
         }
 
-        document.getElementById('status-message').textContent = 'הסידור מעודכן!';
+        document.getElementById('status-message').textContent = 'מעודכן';
     } catch (error) {
         document.getElementById('status-message').textContent = 'Error fetching data from Google Sheets: ' + error.message;
         console.error('Error fetching data:', error);
