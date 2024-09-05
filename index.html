@@ -111,76 +111,81 @@
     </div>
 
     <script>
-    async function fetchShifts() {
-        const sheetUrl = 'https://docs.google.com/spreadsheets/d/1QhULkTx616YtArCdnBTENKwWQoQQLWRFf_m4fXf1Z0M/export?format=csv';
-        document.getElementById('status-message').textContent = 'Connecting to Google Sheets...';
+async function fetchShifts() {
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/1QhULkTx616YtArCdnBTENKwWQoQQLWRFf_m4fXf1Z0M/export?format=csv';
+    document.getElementById('status-message').textContent = 'Connecting to Google Sheets...';
 
-        try {
-            const response = await fetch(sheetUrl);
-            if (!response.ok) {
-                throw new Error('Failed to fetch data from Google Sheets');
-            }
-            const csvData = await response.text();
-            const rows = csvData.split('\n').map(row => row.split(','));
-
-            // Map of workers and their phone numbers from your CSV (adjust row numbers accordingly)
-            const workers = {
-                'יהלי ברנר': rows[15][2], // Assuming phone numbers are in column 2 starting from row 15
-                'עידן טרביס': rows[16][2],
-                'גל ורטהיימר': rows[17][2],
-                'דביר עמיתי': rows[18][2],
-                'בר שטלמן': rows[19][2],
-                'דולב שיליאן': rows[20][2],
-                'נועם ידעי': rows[21][2],
-                'יובל ידעי': rows[22][2],
-                'יובל חדד': rows[23][2],
-                'הראל דימבורט': rows[24][2],
-                'אביב פרימור': rows[25][2],
-                'אביחי שושן': rows[26][2]
-            };
-
-            // Function to update each shift cell with a WhatsApp link
-            const updateShiftCell = (workerName, elementId) => {
-                if (workers[workerName]) {
-                    document.getElementById(elementId).innerHTML = `<a href="https://wa.me/${workers[workerName]}" target="_blank">${workerName}</a>`;
-                } else {
-                    document.getElementById(elementId).textContent = workerName; // Fallback if no phone number found
-                }
-            };
-
-            // Update morning shifts with WhatsApp links
-            updateShiftCell('יהלי ברנר', 'sat-morning');
-            updateShiftCell('עידן טרביס', 'fri-morning');
-            updateShiftCell('גל ורטהיימר', 'thu-morning');
-            updateShiftCell('דביר עמיתי', 'wed-morning');
-            updateShiftCell('בר שטלמן', 'tue-morning');
-            updateShiftCell('דולב שיליאן', 'mon-morning');
-            updateShiftCell('נועם ידעי', 'sun-morning');
-
-            // Update night shifts for location 1
-            updateShiftCell('בר שטלמן', 'sat-night-loc1');
-            updateShiftCell('עומר שחם', 'fri-night-loc1');
-            updateShiftCell('דביר עמיתי', 'thu-night-loc1');
-            updateShiftCell('דולב שיליאן', 'wed-night-loc1');
-            updateShiftCell('גל ורטהיימר', 'tue-night-loc1');
-            updateShiftCell('אביחי שושן', 'mon-night-loc1');
-            updateShiftCell('עידן טרביס', 'sun-night-loc1');
-
-            // Update night shifts for location 2
-            updateShiftCell('יובל ידעי', 'sat-night-loc2');
-            updateShiftCell('יובל חדד', 'fri-night-loc2');
-            updateShiftCell('הראל דימבורט', 'thu-night-loc2');
-            updateShiftCell('יובל חדד', 'wed-night-loc2');
-            updateShiftCell('הראל דימבורט', 'tue-night-loc2');
-            updateShiftCell('אביב פרימור', 'mon-night-loc2');
-            updateShiftCell('יובל ידעי', 'sun-night-loc2');
-
-            document.getElementById('status-message').textContent = 'Data fetched successfully!';
-        } catch (error) {
-            document.getElementById('status-message').textContent = 'Error fetching data from Google Sheets: ' + error.message;
-            console.error('Error fetching data:', error);
+    try {
+        const response = await fetch(sheetUrl);
+        if (!response.ok) {
+            throw new Error('Failed to fetch data from Google Sheets');
         }
+        const csvData = await response.text();
+        const rows = csvData.split('\n').map(row => row.split(','));
+
+        // Assuming shift assignments are in rows 8, 9, 10 for morning, night-loc1, and night-loc2
+        // and phone numbers are in column 2 starting from row 15 (index 14).
+        
+        // Create a mapping of worker names to phone numbers (for WhatsApp links)
+        let workers = {};
+
+        // Assuming worker names are in column 1 and phone numbers in column 2, starting from row 15
+        for (let i = 15; i < rows.length; i++) {
+            const name = rows[i][6].trim();  // Worker name
+            const phone = rows[i][5].trim(); // Phone number
+            if (name && phone) {
+                workers[name] = phone;  // Map names to phone numbers
+            }
+        }
+
+        // Update each shift by fetching names from relevant rows in the sheet (morning, night-loc1, night-loc2)
+        const morningShift = rows[7]; // Morning shift names
+        const nightLoc1Shift = rows[8]; // Night shift location 1 names
+        const nightLoc2Shift = rows[9]; // Night shift location 2 names
+
+        // Helper function to create a WhatsApp link if the worker has a phone number
+        const updateShiftCell = (workerName, elementId) => {
+            if (workerName && workers[workerName]) {
+                document.getElementById(elementId).innerHTML = `<a href="https://wa.me/${workers[workerName]}" target="_blank">${workerName}</a>`;
+            } else {
+                document.getElementById(elementId).textContent = workerName || 'לא משובץ';
+            }
+        };
+
+        // Update morning shifts dynamically
+        updateShiftCell(morningShift[0], 'sat-morning');
+        updateShiftCell(morningShift[1], 'fri-morning');
+        updateShiftCell(morningShift[2], 'thu-morning');
+        updateShiftCell(morningShift[3], 'wed-morning');
+        updateShiftCell(morningShift[4], 'tue-morning');
+        updateShiftCell(morningShift[5], 'mon-morning');
+        updateShiftCell(morningShift[6], 'sun-morning');
+
+        // Update night shifts for location 1 dynamically
+        updateShiftCell(nightLoc1Shift[0], 'sat-night-loc1');
+        updateShiftCell(nightLoc1Shift[1], 'fri-night-loc1');
+        updateShiftCell(nightLoc1Shift[2], 'thu-night-loc1');
+        updateShiftCell(nightLoc1Shift[3], 'wed-night-loc1');
+        updateShiftCell(nightLoc1Shift[4], 'tue-night-loc1');
+        updateShiftCell(nightLoc1Shift[5], 'mon-night-loc1');
+        updateShiftCell(nightLoc1Shift[6], 'sun-night-loc1');
+
+        // Update night shifts for location 2 dynamically
+        updateShiftCell(nightLoc2Shift[0], 'sat-night-loc2');
+        updateShiftCell(nightLoc2Shift[1], 'fri-night-loc2');
+        updateShiftCell(nightLoc2Shift[2], 'thu-night-loc2');
+        updateShiftCell(nightLoc2Shift[3], 'wed-night-loc2');
+        updateShiftCell(nightLoc2Shift[4], 'tue-night-loc2');
+        updateShiftCell(nightLoc2Shift[5], 'mon-night-loc2');
+        updateShiftCell(nightLoc2Shift[6], 'sun-night-loc2');
+
+        document.getElementById('status-message').textContent = 'Data fetched successfully!';
+    } catch (error) {
+        document.getElementById('status-message').textContent = 'Error fetching data from Google Sheets: ' + error.message;
+        console.error('Error fetching data:', error);
     }
+}
+
 
     function highlightCurrentShift() {
         const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
