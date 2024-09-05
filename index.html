@@ -111,9 +111,8 @@
     </div>
 
     <script>
-    // Fetching Google Sheets data
     async function fetchShifts() {
-        const sheetUrl = 'https://spreadsheets.google.com/feeds/list/10gBhmQ0Xyz-9W8xv6wvgYdngzCNyQ_a-pvvGXeY7YCk/1/public/values?alt=json';
+        const sheetUrl = 'https://docs.google.com/spreadsheets/d/10gBhmQ0Xyz-9W8xv6wvgYdngzCNyQ_a-pvvGXeY7YCk/export?format=csv';
         document.getElementById('status-message').textContent = 'Connecting to Google Sheets...';
 
         try {
@@ -121,49 +120,36 @@
             if (!response.ok) {
                 throw new Error('Failed to fetch data from Google Sheets');
             }
+            const csvData = await response.text();
 
-            const data = await response.json();
+            const rows = csvData.split('\n').map(row => row.split(','));
+
+            // Map CSV data to shift cells (assuming CSV format aligns with the shift schedule)
+            document.getElementById("sat-morning").textContent = rows[1][0] || 'לא משובץ';
+            document.getElementById("fri-morning").textContent = rows[1][1] || 'לא משובץ';
+            document.getElementById("thu-morning").textContent = rows[1][2] || 'לא משובץ';
+            document.getElementById("wed-morning").textContent = rows[1][3] || 'לא משובץ';
+            document.getElementById("tue-morning").textContent = rows[1][4] || 'לא משובץ';
+            document.getElementById("mon-morning").textContent = rows[1][5] || 'לא משובץ';
+            document.getElementById("sun-morning").textContent = rows[1][6] || 'לא משובץ';
+            
+            document.getElementById("sat-night-loc1").textContent = rows[2][0] || 'לא משובץ';
+            document.getElementById("fri-night-loc1").textContent = rows[2][1] || 'לא משובץ';
+            document.getElementById("thu-night-loc1").textContent = rows[2][2] || 'לא משובץ';
+            document.getElementById("wed-night-loc1").textContent = rows[2][3] || 'לא משובץ';
+            document.getElementById("tue-night-loc1").textContent = rows[2][4] || 'לא משובץ';
+            document.getElementById("mon-night-loc1").textContent = rows[2][5] || 'לא משובץ';
+            document.getElementById("sun-night-loc1").textContent = rows[2][6] || 'לא משובץ';
+            
+            document.getElementById("sat-night-loc2").textContent = rows[3][0] || 'לא משובץ';
+            document.getElementById("fri-night-loc2").textContent = rows[3][1] || 'לא משובץ';
+            document.getElementById("thu-night-loc2").textContent = rows[3][2] || 'לא משובץ';
+            document.getElementById("wed-night-loc2").textContent = rows[3][3] || 'לא משובץ';
+            document.getElementById("tue-night-loc2").textContent = rows[3][4] || 'לא משובץ';
+            document.getElementById("mon-night-loc2").textContent = rows[3][5] || 'לא משובץ';
+            document.getElementById("sun-night-loc2").textContent = rows[3][6] || 'לא משובץ';
+
             document.getElementById('status-message').textContent = 'Data fetched successfully!';
-
-            const entries = data.feed.entry;
-            const shiftData = {};
-
-            // Mapping the data from the sheet to appropriate table cells
-            entries.forEach(entry => {
-                const cell = entry['gs$cell'];
-                const row = cell.row;
-                const col = cell.col;
-                
-                // Fetching specific cells for the morning and night shifts
-                if (row == 8) shiftData[`morning-shift-${col}`] = cell.$t;
-                if (row == 9) shiftData[`night-loc1-${col}`] = cell.$t;
-                if (row == 10) shiftData[`night-loc2-${col}`] = cell.$t;
-            });
-
-            // Updating the table based on shiftData
-            document.getElementById("sat-morning").textContent = shiftData['morning-shift-1'] || 'לא משובץ';
-            document.getElementById("fri-morning").textContent = shiftData['morning-shift-2'] || 'לא משובץ';
-            document.getElementById("thu-morning").textContent = shiftData['morning-shift-3'] || 'לא משובץ';
-            document.getElementById("wed-morning").textContent = shiftData['morning-shift-4'] || 'לא משובץ';
-            document.getElementById("tue-morning").textContent = shiftData['morning-shift-5'] || 'לא משובץ';
-            document.getElementById("mon-morning").textContent = shiftData['morning-shift-6'] || 'לא משובץ';
-            document.getElementById("sun-morning").textContent = shiftData['morning-shift-7'] || 'לא משובץ';
-            
-            document.getElementById("sat-night-loc1").textContent = shiftData['night-loc1-1'] || 'לא משובץ';
-            document.getElementById("fri-night-loc1").textContent = shiftData['night-loc1-2'] || 'לא משובץ';
-            document.getElementById("thu-night-loc1").textContent = shiftData['night-loc1-3'] || 'לא משובץ';
-            document.getElementById("wed-night-loc1").textContent = shiftData['night-loc1-4'] || 'לא משובץ';
-            document.getElementById("tue-night-loc1").textContent = shiftData['night-loc1-5'] || 'לא משובץ';
-            document.getElementById("mon-night-loc1").textContent = shiftData['night-loc1-6'] || 'לא משובץ';
-            document.getElementById("sun-night-loc1").textContent = shiftData['night-loc1-7'] || 'לא משובץ';
-            
-            document.getElementById("sat-night-loc2").textContent = shiftData['night-loc2-1'] || 'לא משובץ';
-            document.getElementById("fri-night-loc2").textContent = shiftData['night-loc2-2'] || 'לא משובץ';
-            document.getElementById("thu-night-loc2").textContent = shiftData['night-loc2-3'] || 'לא משובץ';
-            document.getElementById("wed-night-loc2").textContent = shiftData['night-loc2-4'] || 'לא משובץ';
-            document.getElementById("tue-night-loc2").textContent = shiftData['night-loc2-5'] || 'לא משובץ';
-            document.getElementById("mon-night-loc2").textContent = shiftData['night-loc2-6'] || 'לא משובץ';
-            document.getElementById("sun-night-loc2").textContent = shiftData['night-loc2-7'] || 'לא משובץ';
         } catch (error) {
             document.getElementById('status-message').textContent = 'Error fetching data from Google Sheets: ' + error.message;
             console.error('Error fetching data:', error);
@@ -171,43 +157,34 @@
     }
 
     function highlightCurrentShift() {
-        // Get the current date and time in the specified time zone
         const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
         const currentHour = now.getHours();
         const currentDay = now.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
 
-        // Convert currentDay to match the table's column index
         const columnIndex = 6 - currentDay;
 
-        // Select the shift rows
         const morningShiftRow = document.getElementById('morning-shift-2');
         const nightShift1Row = document.getElementById('night-shift-3');
         const nightShift2Row = document.getElementById('night-shift-4');
 
-        // Remove any previous highlights
         const allCells = document.querySelectorAll('td');
         allCells.forEach(cell => {
             cell.classList.remove('highlight');
         });
 
-        // Highlight the specific cell based on the current time and adjusted day index
         if (currentHour >= 7 && currentHour < 19) {
-            // Day shift: 7 am - 7 pm
             morningShiftRow.children[columnIndex].classList.add('highlight');
         } else {
-            // Night shift: 7 pm - 7 am
             nightShift1Row.children[columnIndex].classList.add('highlight');
             nightShift2Row.children[columnIndex].classList.add('highlight');
         }
     }
 
-    // Fetch data and apply highlight on load
     window.onload = function() {
         fetchShifts();
         highlightCurrentShift();
     };
 
-    // Auto-refresh every 5 minutes (300000 ms)
     setInterval(() => {
         fetchShifts();
         highlightCurrentShift();
