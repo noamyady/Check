@@ -124,24 +124,27 @@ async function fetchShifts() {
         const csvData = await response.text();
         const rows = csvData.split('\n').map(row => row.split(','));
 
+        // Log the entire rows array for debugging
+        console.log('Raw rows data:', rows);
+
         // Create a mapping of worker names (from column 6) to phone numbers (from column 5)
         let workers = {};
 
-        // Iterate over the rows starting from row 14 (index 13 in the array) and skip the header row
+        // Iterate over the rows starting from row 14 (index 13 in the array)
         for (let i = 14; i < rows.length; i++) {
             const name = rows[i][6]?.trim();  // Worker name from column 6
             let phone = rows[i][5]?.trim(); // Phone number from column 5
             
-            // Skip rows with invalid data or headers
-            if (name === "רשימת שמות" || phone === "מספר טלפון") {
-                continue; // Skip header row
-            }
+            // Log rows that seem to be problematic
+            if (!name || !phone) {
+                console.warn(`Missing name or phone at row ${i + 1}:`, rows[i]);
+            } else {
+                // Clean up any special characters in phone numbers
+                phone = phone.replace(/[^\d]/g, ''); // Remove non-numeric characters
 
-            // Clean up any special characters in phone numbers
-            phone = phone.replace(/[^\d]/g, ''); // Remove non-numeric characters
-
-            if (name && phone) {
-                workers[name] = phone;  // Add to the workers object
+                if (name && phone) {
+                    workers[name] = phone;  // Add to the workers object
+                }
             }
         }
 
@@ -195,6 +198,7 @@ async function fetchShifts() {
         console.error('Error fetching data:', error);
     }
 }
+
 
 
 
