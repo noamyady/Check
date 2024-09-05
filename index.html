@@ -107,14 +107,23 @@
                 <td>מבשרת ציון<br> לילה<br>19:00-7:00</td>
             </tr>
         </table>
+        <p id="status-message">Connecting to Google Sheets...</p>
     </div>
 
     <script>
     // Fetching Google Sheets data
     async function fetchShifts() {
-        const sheetUrl = 'https://spreadsheets.google.com/feeds/cells/10gBhmQ0Xyz-9W8xv6wvgYdngzCNyQ_a-pvvGXeY7YCk/1/public/full?alt=json';
+    const sheetUrl = 'https://spreadsheets.google.com/feeds/cells/10gBhmQ0Xyz-9W8xv6wvgYdngzCNyQ_a-pvvGXeY7YCk/1/public/full?alt=json';
+    document.getElementById('status-message').textContent = 'Connecting to Google Sheets...';
+
+    try {
         const response = await fetch(sheetUrl);
+        if (!response.ok) {
+            throw new Error('Failed to fetch data from Google Sheets');
+        }
+
         const data = await response.json();
+        document.getElementById('status-message').textContent = 'Data fetched successfully!';
 
         const entries = data.feed.entry;
         const shiftData = {};
@@ -155,6 +164,9 @@
         document.getElementById("tue-night-loc2").textContent = shiftData['night-loc2-5'] || 'לא משובץ';
         document.getElementById("mon-night-loc2").textContent = shiftData['night-loc2-6'] || 'לא משובץ';
         document.getElementById("sun-night-loc2").textContent = shiftData['night-loc2-7'] || 'לא משובץ';
+    } catch (error) {
+        document.getElementById('status-message').textContent = 'Error fetching data from Google Sheets: ' + error.message;
+        console.error('Error fetching data:', error);
     }
 
     function highlightCurrentShift() {
