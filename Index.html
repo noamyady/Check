@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משמרות שבועיות</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: auto;
+            background-color: #f4f4f4;
+        }
+        .schedule-container {
+            width: 90%;
+            max-width: 800px;
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #f7f7f7;
+        }
+        .yellow {
+            background-color: #fde9b8;
+        }
+        .blue {
+            background-color: #c6e2ff;
+        }
+        .highlight {
+            background-color: #a8d5a5; /* Light green for current shift */
+        }
+        a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+        a:hover {
+            color: #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="schedule-container">
+        <h1>משמרות - 1-7.09</h1>
+        <table>
+            <tr>
+                <th>שבת<br> 7.9</th>
+                <th>שישי<br> 6.9</th>
+                <th>חמישי<br> 5.9</th>
+                <th>רביעי<br> 4.9</th>
+                <th>שלישי<br> 3.9</th>
+                <th>שני<br> 2.9</th>
+                <th>ראשון<br> 1.9</th>
+                <th>משמרות</th>
+            </tr>
+            <tr id="morning-shift-loc1" class="yellow">
+                <td id="sat-morning">Loading...</td>
+                <td id="fri-morning">Loading...</td>
+                <td id="thu-morning">Loading...</td>
+                <td id="wed-morning">Loading...</td>
+                <td id="tue-morning">Loading...</td>
+                <td id="mon-morning">Loading...</td>
+                <td id="sun-morning">Loading...</td>
+                <td>כפר שמריהו<br> בוקר<br>7:00-19:00</td>
+            </tr>
+            <tr id="night-shift-loc1" class="yellow">
+                <td id="sat-night-loc1">Loading...</td>
+                <td id="fri-night-loc1">Loading...</td>
+                <td id="thu-night-loc1">Loading...</td>
+                <td id="wed-night-loc1">Loading...</td>
+                <td id="tue-night-loc1">Loading...</td>
+                <td id="mon-night-loc1">Loading...</td>
+                <td id="sun-night-loc1">Loading...</td>
+                <td>כפר שמריהו<br> לילה<br>19:00-7:00</td>
+            </tr>
+            <tr id="night-shift-loc2" class="blue">
+                <td id="sat-night-loc2">Loading...</td>
+                <td id="fri-night-loc2">Loading...</td>
+                <td id="thu-night-loc2">Loading...</td>
+                <td id="wed-night-loc2">Loading...</td>
+                <td id="tue-night-loc2">Loading...</td>
+                <td id="mon-night-loc2">Loading...</td>
+                <td id="sun-night-loc2">Loading...</td>
+                <td>מבשרת ציון<br> לילה<br>19:00-7:00</td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+    // Fetching Google Sheets data
+    async function fetchShifts() {
+        const sheetUrl = 'https://spreadsheets.google.com/feeds/cells/1QhULkTx616YtArCdnBTENKwWQoQQLWRFf_m4fXf1Z0M/1/public/full?alt=json';
+        const response = await fetch(sheetUrl);
+        const data = await response.json();
+
+        const entries = data.feed.entry;
+        const shiftData = {};
+
+        // Mapping the data from the sheet to appropriate table cells
+        entries.forEach(entry => {
+            const cell = entry['gs$cell'];
+            const row = cell.row;
+            const col = cell.col;
+            
+            // Fetching specific cells for the morning and night shifts
+            if (row == 8) shiftData[`morning-shift-${col}`] = cell.$t;
+            if (row == 9) shiftData[`night-loc1-${col}`] = cell.$t;
+            if (row == 10) shiftData[`night-loc2-${col}`] = cell.$t;
+        });
+
+        // Updating the table based on shiftData
+        document.getElementById("sat-morning").textContent = shiftData['morning-shift-1'] || 'לא משובץ';
+        document.getElementById("fri-morning").textContent = shiftData['morning-shift-2'] || 'לא משובץ';
+        document.getElementById("thu-morning").textContent = shiftData['morning-shift-3'] || 'לא משובץ';
+        document.getElementById("wed-morning").textContent = shiftData['morning-shift-4'] || 'לא משובץ';
+        document.getElementById("tue-morning").textContent = shiftData['morning-shift-5'] || 'לא משובץ';
+        document.getElementById("mon-morning").textContent = shiftData['morning-shift-6'] || 'לא משובץ';
+        document.getElementById("sun-morning").textContent = shiftData['morning-shift-7'] || 'לא משובץ';
+        
+        document.getElementById("sat-night-loc1").textContent = shiftData['night-loc1-1'] || 'לא משובץ';
+        document.getElementById("fri-night-loc1").textContent = shiftData['night-loc1-2'] || 'לא משובץ';
+        document.getElementById("thu-night-loc1").textContent = shiftData['night-loc1-3'] || 'לא משובץ';
+        document.getElementById("wed-night-loc1").textContent = shiftData['night-loc1-4'] || 'לא משובץ';
+        document.getElementById("tue-night-loc1").textContent = shiftData['night-loc1-5'] || 'לא משובץ';
+        document.getElementById("mon-night-loc1").textContent = shiftData['night-loc1-6'] || 'לא משובץ';
+        document.getElementById("sun-night-loc1").textContent = shiftData['night-loc1-7'] || 'לא משובץ';
+        
+        document.getElementById("sat-night-loc2").textContent = shiftData['night-loc2-1'] || 'לא משובץ';
+        document.getElementById("fri-night-loc2").textContent = shiftData['night-loc2-2'] || 'לא משובץ';
+        document.getElementById("thu-night-loc2").textContent = shiftData['night-loc2-3'] || 'לא משובץ';
+        document.getElementById("wed-night-loc2").textContent = shiftData['night-loc2-4'] || 'לא משובץ';
+        document.getElementById("tue-night-loc2").textContent = shiftData['night-loc2-5'] || 'לא משובץ';
+        document.getElementById("mon-night-loc2").textContent = shiftData['night-loc2-6'] || 'לא משובץ';
+        document.getElementById("sun-night-loc2").textContent = shiftData['night-loc2-7'] || 'לא משובץ';
+    }
+
+    function highlightCurrentShift() {
+        const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
+        const currentHour = now.getHours();
+        const currentDay = now.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+
+        // Convert currentDay to match the table's column index
+        const columnIndex = 6 - currentDay;
+
+        const morningShiftRowLoc1 = document.getElementById('morning-shift-loc1');
+        const nightShiftRowLoc1 = document.getElementById('night-shift-loc1');
+        const nightShiftRowLoc2 = document.getElementById('night-shift-loc2');
+
+        // Remove previous highlights
+        const allCells = document.querySelectorAll('td');
+        allCells.forEach(cell => cell.classList.remove('highlight'));
+
+        if (currentHour >= 7 && currentHour < 19) {
+            morningShiftRowLoc1.children[columnIndex].classList.add('highlight');
+        } else {
+            nightShiftRowLoc1.children[columnIndex].classList.add('highlight');
+            nightShiftRowLoc2.children[columnIndex].classList.add('highlight');
+        }
+    }
+
+    // Fetch data on page load and highlight current shift
+    window.onload = function() {
+        fetchShifts();
+        highlightCurrentShift();
+    };
+
+    // Auto-refresh every 5 minutes (300000 ms)
+    setInterval(() => {
+        fetchShifts();
+        highlightCurrentShift();
+    }, 300000);
+    </script>
+</body>
+</html>
