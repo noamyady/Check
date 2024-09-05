@@ -163,55 +163,67 @@
     </div>
 
     <script>
-    async function fetchShifts() {
-        const sheetUrl = 'https://docs.google.com/spreadsheets/d/1QhULkTx616YtArCdnBTENKwWQoQQLWRFf_m4fXf1Z0M/export?format=csv';
-        document.getElementById('status-message').textContent = 'טוען...';
+async function fetchShifts() {
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/1QhULkTx616YtArCdnBTENKwWQoQQLWRFf_m4fXf1Z0M/export?format=csv';
+    document.getElementById('status-message').textContent = 'טוען...';
 
-        try {
-            const response = await fetch(sheetUrl);
-            if (!response.ok) {
-                throw new Error('שגיאה - יש בעיה');
-            }
-            const csvData = await response.text();
-            const rows = csvData.split('\n').map(row => row.split(','));
+    try {
+        const response = await fetch(sheetUrl);
+        if (!response.ok) {
+            throw new Error('שגיאה - יש בעיה');
+        }
+        const csvData = await response.text();
+        const rows = csvData.split('\n').map(row => row.split(','));
 
-            // Extract the Sunday date for current week from H12
-            const nextWeekSundayDateStr = rows[11][7]?.trim();
-            const nextWeekBaseDate = new Date(nextWeekSundayDateStr);
+        // Extract the Sunday date for the current week from H7
+        const sundayDateStr = rows[6][7]?.trim();
+        const baseDate = new Date(sundayDateStr);
+        if (isNaN(baseDate)) {
+            throw new Error('Invalid date in H7');
+        }
 
-            if (isNaN(nextWeekBaseDate)) {
-                // If H12 is invalid, show only one table for current week (from rows 7-10)
-                document.getElementById('next-week-table').style.display = 'none';
-                document.getElementById('current-week-title').textContent = 'משמרות לשבוע זה';
+        // Update the dates for the current week
+        document.getElementById('date-sun').textContent = formatDate(baseDate);
+        document.getElementById('date-mon').textContent = formatDate(addDays(baseDate, 1));
+        document.getElementById('date-tue').textContent = formatDate(addDays(baseDate, 2));
+        document.getElementById('date-wed').textContent = formatDate(addDays(baseDate, 3));
+        document.getElementById('date-thu').textContent = formatDate(addDays(baseDate, 4));
+        document.getElementById('date-fri').textContent = formatDate(addDays(baseDate, 5));
+        document.getElementById('date-sat').textContent = formatDate(addDays(baseDate, 6));
 
-                const currentWeekSundayDateStr = rows[6][7]?.trim();
-                const baseDate = new Date(currentWeekSundayDateStr);
-                updateWeekTable(baseDate, 'current');
-            } else {
-                // If H12 is valid, show two tables
-                document.getElementById('next-week-table').style.display = 'block';
-                document.getElementById('current-week-title').textContent = 'משמרות לשבוע זה';
-                document.getElementById('next-week-title').textContent = 'משמרות לשבוע הבא';
+        // Function to format dates as dd.mm
+        function formatDate(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            return `${day}.${month}`;
+        }
 
-                // Update the tables with correct data
-                const currentWeekSundayDateStr = rows[11][7]?.trim(); // For current week (rows 12-15)
-                const currentBaseDate = new Date(currentWeekSundayDateStr);
-                updateWeekTable(currentBaseDate, 'current');
+        // Function to add days to a date
+        function addDays(date, days) {
+            const result = new Date(date);
+            result.setDate(result.getDate() + days);
+            return result;
+        }
 
-                updateWeekTable(nextWeekBaseDate, 'next');
-            }
+        // Check for next week's schedule
+        const nextSundayDateStr = rows[11][7]?.trim();
+        if (nextSundayDateStr) {
+            // Show the next week's schedule
+            document.getElementById('next-week-schedule').style.display = 'block';
 
-            // Function to update tables
-            function updateWeekTable(baseDate, weekType) {
-                // Update the dates for the week
-                document.getElementById(`date-sun-${weekType}`).textContent = formatDate(baseDate);
-                document.getElementById(`date-mon-${weekType}`).textContent = formatDate(addDays(baseDate, 1));
-                document.getElementById(`date-tue-${weekType}`).textContent = formatDate(addDays(baseDate, 2));
-                document.getElementById(`date-wed-${weekType}`).textContent = formatDate(addDays(baseDate, 3));
-                document.getElementById(`date-thu-${weekType}`).textContent = formatDate(addDays(baseDate, 4));
-                document.getElementById(`date-fri-${weekType}`).textContent = formatDate(addDays(baseDate, 5));
-                document.getElementById(`date-sat-${weekType}`).textContent = formatDate(addDays(baseDate, 6));
-            }
+            // Calculate the next week's Sunday as 7 days after the current week's Sunday
+            const nextBaseDate = new Date(baseDate);
+            nextBaseDate.setDate(baseDate.getDate() + 7); // Add 7 days for next week
+
+            // Update the dates for the next week
+            document.getElementById('date-sun-next').textContent = formatDate(nextBaseDate);
+            document.getElementById('date-mon-next').textContent = formatDate(addDays(nextBaseDate, 1));
+            document.getElementById('date-tue-next').textContent = formatDate(addDays(nextBaseDate, 2));
+            document.getElementById('date-wed-next').textContent = formatDate(addDays(nextBaseDate, 3));
+            document.getElementById('date-thu-next').textContent = formatDate(addDays(nextBaseDate, 4));
+            document.getElementById('date-fri-next').textContent = formatDate(addDays(nextBaseDate, 5));
+            document.getElementById('date-sat-next').textContent = formatDate(addDays(nextBaseDate, 6));
+        }
 
             // Function to format dates as dd.mm
             function formatDate(date) {
