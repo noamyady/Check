@@ -169,19 +169,26 @@
 
         console.log('Workers extracted:', workers);
 
-        // Update shifts dynamically with WhatsApp links
-        const morningShift = rows[7]; // Morning shift row
-        const nightLoc1Shift = rows[8]; // Night shift location 1 row
-        const nightLoc2Shift = rows[9]; // Night shift location 2 row
+       // Now map the names from specific rows (shift assignments) to table cells
+        const morningShift = rows[7]; // Morning shift names
+        const nightLoc1Shift = rows[8]; // Night shift location 1 names
+        const nightLoc2Shift = rows[9]; // Night shift location 2 names
 
-        const updateShiftCell = (workerName, elementId) => {
-            if (workerName && workers[workerName]) {
-                // Add WhatsApp link with the worker's name
-                document.getElementById(elementId).innerHTML = `<a href="https://wa.me/${workers[workerName]}" target="_blank">${workerName}</a>`;
-            } else {
-                document.getElementById(elementId).textContent = workerName || 'לא משובץ';
-            }
-        };
+// Helper function to update shift cells with WhatsApp links and split names into two lines
+const updateShiftCell = (workerName, elementId) => {
+    if (workerName && workers[workerName]) {
+        // Split the worker's name into two parts if possible (first and last name)
+        const nameParts = workerName.split(' ');
+        const nameWithLineBreak = nameParts.length === 2 ? ${nameParts[0]}<br>${nameParts[1]} : workerName;
+
+        // Add the name and WhatsApp link to the table cell
+        document.getElementById(elementId).innerHTML = <a href="https://wa.me/${workers[workerName]}" target="_blank">${nameWithLineBreak}</a>;
+    } else {
+        // Fallback for missing workers: either show the name or 'לא משובץ'
+        document.getElementById(elementId).textContent = workerName || 'לא משובץ';
+    }
+};
+
 
         // Update morning shifts dynamically
         updateShiftCell(morningShift[0], 'sat-morning');
