@@ -123,32 +123,29 @@ async function fetchShifts() {
         const csvData = await response.text();
         const rows = csvData.split('\n').map(row => row.split(','));
 
-        // Assuming shift assignments are in rows 8, 9, 10 for morning, night-loc1, and night-loc2
-        // and phone numbers are in column 2 starting from row 15 (index 14).
-        
-        // Create a mapping of worker names to phone numbers (for WhatsApp links)
+        // Create a mapping of worker names (from column 6) to phone numbers (from column 5)
         let workers = {};
 
-        // Assuming worker names are in column 1 and phone numbers in column 2, starting from row 15
-        for (let i = 15; i < rows.length; i++) {
-            const name = rows[i][6].trim();  // Worker name
-            const phone = rows[i][5].trim(); // Phone number
+        // Iterate over the rows starting from row 14 (index 13 in the array)
+        for (let i = 13; i < rows.length; i++) {
+            const name = rows[i][6]?.trim();  // Worker name from column 6
+            const phone = rows[i][5]?.trim(); // Phone number from column 5
             if (name && phone) {
-                workers[name] = phone;  // Map names to phone numbers
+                workers[name] = phone;  // Add to the workers object
             }
         }
 
-        // Update each shift by fetching names from relevant rows in the sheet (morning, night-loc1, night-loc2)
+        // Now map the names from specific rows (shift assignments) to table cells
         const morningShift = rows[7]; // Morning shift names
         const nightLoc1Shift = rows[8]; // Night shift location 1 names
         const nightLoc2Shift = rows[9]; // Night shift location 2 names
 
-        // Helper function to create a WhatsApp link if the worker has a phone number
+        // Helper function to update shift cells with WhatsApp links
         const updateShiftCell = (workerName, elementId) => {
             if (workerName && workers[workerName]) {
                 document.getElementById(elementId).innerHTML = `<a href="https://wa.me/${workers[workerName]}" target="_blank">${workerName}</a>`;
             } else {
-                document.getElementById(elementId).textContent = workerName || 'לא משובץ';
+                document.getElementById(elementId).textContent = workerName || 'לא משובץ'; // Fallback if no name or phone number is found
             }
         };
 
@@ -185,6 +182,7 @@ async function fetchShifts() {
         console.error('Error fetching data:', error);
     }
 }
+
 
 
     function highlightCurrentShift() {
