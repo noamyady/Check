@@ -77,49 +77,49 @@
                 <th>משמרות</th>
             </tr>
             <tr id="morning-shift-2" class="yellow">
-                <td id="sat-morning">Loading...</td>
-                <td id="fri-morning">Loading...</td>
-                <td id="thu-morning">Loading...</td>
-                <td id="wed-morning">Loading...</td>
-                <td id="tue-morning">Loading...</td>
-                <td id="mon-morning">Loading...</td>
-                <td id="sun-morning">Loading...</td>
+                <td id="sat-morning">מתעדכן...</td>
+                <td id="fri-morning">מתעדכן...</td>
+                <td id="thu-morning">מתעדכן...</td>
+                <td id="wed-morning">מתעדכן...</td>
+                <td id="tue-morning">מתעדכן...</td>
+                <td id="mon-morning">מתעדכן...</td>
+                <td id="sun-morning">מתעדכן...</td>
                 <td>כפר שמריהו<br>בוקר<br>7:00-19:00</td>
             </tr>
             <tr id="night-shift-3" class="yellow">
-                <td id="sat-night-loc1">Loading...</td>
-                <td id="fri-night-loc1">Loading...</td>
-                <td id="thu-night-loc1">Loading...</td>
-                <td id="wed-night-loc1">Loading...</td>
-                <td id="tue-night-loc1">Loading...</td>
-                <td id="mon-night-loc1">Loading...</td>
-                <td id="sun-night-loc1">Loading...</td>
+                <td id="sat-night-loc1">מתעדכן...</td>
+                <td id="fri-night-loc1">מתעדכן...</td>
+                <td id="thu-night-loc1">מתעדכן...</td>
+                <td id="wed-night-loc1">מתעדכן...</td>
+                <td id="tue-night-loc1">מתעדכן...</td>
+                <td id="mon-night-loc1">מתעדכן...</td>
+                <td id="sun-night-loc1">מתעדכן...</td>
                 <td>כפר שמריהו<br>לילה<br>19:00-7:00</td>
             </tr>
             <tr id="night-shift-4" class="blue">
-                <td id="sat-night-loc2">Loading...</td>
-                <td id="fri-night-loc2">Loading...</td>
-                <td id="thu-night-loc2">Loading...</td>
-                <td id="wed-night-loc2">Loading...</td>
-                <td id="tue-night-loc2">Loading...</td>
-                <td id="mon-night-loc2">Loading...</td>
-                <td id="sun-night-loc2">Loading...</td>
+                <td id="sat-night-loc2">מתעדכן...</td>
+                <td id="fri-night-loc2">מתעדכן...</td>
+                <td id="thu-night-loc2">מתעדכן...</td>
+                <td id="wed-night-loc2">מתעדכן...</td>
+                <td id="tue-night-loc2">מתעדכן...</td>
+                <td id="mon-night-loc2">מתעדכן...</td>
+                <td id="sun-night-loc2">מתעדכן...</td>
                 <td>מבשרת ציון<br>לילה<br>19:00-7:00</td>
             </tr>
         </table>
-        <p id="status-message">Connecting to Google Sheets...</p>
+        <p id="status-message">טוען...</p>
     </div>
 
     <script>
 
 async function fetchShifts() {
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/1QhULkTx616YtArCdnBTENKwWQoQQLWRFf_m4fXf1Z0M/export?format=csv';
-    document.getElementById('status-message').textContent = 'Connecting to Google Sheets...';
+    document.getElementById('status-message').textContent = 'טוען...';
 
     try {
         const response = await fetch(sheetUrl);
         if (!response.ok) {
-            throw new Error('Failed to fetch data from Google Sheets');
+            throw new Error('שגיאה - יש בעיה');
         }
         const csvData = await response.text();
         const rows = csvData.split('\n').map(row => row.split(','));
@@ -202,7 +202,7 @@ const updateShiftCell = (workerName, elementId) => {
         updateShiftCell(nightLoc2Shift[5], 'mon-night-loc2');
         updateShiftCell(nightLoc2Shift[6], 'sun-night-loc2');
 
-        document.getElementById('status-message').textContent = 'Data fetched successfully!';
+        document.getElementById('status-message').textContent = 'הסידור מעודכן!';
     } catch (error) {
         document.getElementById('status-message').textContent = 'Error fetching data from Google Sheets: ' + error.message;
         console.error('Error fetching data:', error);
