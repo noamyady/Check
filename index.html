@@ -289,12 +289,12 @@ async function fetchShifts() {
         }
 
         // Handle current week
-        const currentWeekRows = rows[6]?.length > 0 ? [rows[12], rows[13], rows[14]] : [rows[7], rows[8], rows[9]];
+        const currentWeekRows = rows[6]?.length > 0 ? [rows[7], rows[8], rows[9]] : [rows[12], rows[13], rows[14]];
         updateShiftTable(currentWeekRows, 'current');
 
         // Handle next week if it exists
         if (nextSundayDateStr && !isNaN(nextBaseDate)) {
-            const nextWeekRows = [rows[7], rows[8], rows[9]];
+            const nextWeekRows = [rows[12], rows[13], rows[14]];
             updateShiftTable(nextWeekRows, 'next');
         }
 
