@@ -66,7 +66,7 @@
     <div class="schedule-container">
         <h1 id="current-week-title">משמרות שבועיות</h1>
 
-        <!-- Current Week's Schedule -->
+        <-- Current Week's Schedule -->
         <div id="current-week-table">
             <table>
                 <tr id="date-row-current">
@@ -112,7 +112,7 @@
             </table>
         </div>
 
-        <!-- Next Week's Schedule (conditionally displayed) -->
+        <-- Next Week's Schedule (conditionally displayed) -->
         <div id="next-week-table" style="display: none;">
             <h1 id="next-week-title">משמרות לשבוע הבא</h1>
             <table>
@@ -165,7 +165,7 @@
     <script>
 async function fetchShifts() {
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/1QhULkTx616YtArCdnBTENKwWQoQQLWRFf_m4fXf1Z0M/export?format=csv';
-    document.getElementById('status-message').textContent = 'טוען...';
+    document.getElementById('status-message').textContent = '...טוען';
 
     try {
         const response = await fetch(sheetUrl);
@@ -189,20 +189,52 @@ async function fetchShifts() {
         // Extract the Sunday date for the current week from H7
         const currentSundayDateStr = rows[6][7]?.trim();
         const currentBaseDate = new Date(currentSundayDateStr);
-        if (isNaN(currentBaseDate)) {
-            throw new Error('Invalid date in H7');
+
+        // Extract the Sunday date for next week from H12
+        const nextSundayDateStr = rows[11][7]?.trim();
+        const nextBaseDate = new Date(nextSundayDateStr);
+
+        // Check if next week's date is valid
+        if (!isNaN(nextBaseDate)) {
+            // Show next week's table first and current week second
+            document.getElementById('next-week-table').style.display = 'block';
+            document.getElementById('current-week-title').textContent = 'משמרות לשבוע זה';
+            document.getElementById('next-week-title').textContent = 'משמרות לשבוע הבא';
+
+            // Assign rows 12-15 to current week
+            const currentWeekRows = [rows[12], rows[13], rows[14]];
+            updateShiftTable(currentWeekRows, 'current');
+
+            // Assign rows 7-10 to next week
+            const nextWeekRows = [rows[7], rows[8], rows[9]];
+            updateShiftTable(nextWeekRows, 'next');
+
+            // Update the dates for the next week
+            if (document.getElementById('date-sun-next')) {
+                document.getElementById('date-sun-next').textContent = formatDate(nextBaseDate);
+                document.getElementById('date-mon-next').textContent = formatDate(addDays(nextBaseDate, 1));
+                document.getElementById('date-tue-next').textContent = formatDate(addDays(nextBaseDate, 2));
+                document.getElementById('date-wed-next').textContent = formatDate(addDays(nextBaseDate, 3));
+                document.getElementById('date-thu-next').textContent = formatDate(addDays(nextBaseDate, 4));
+                document.getElementById('date-fri-next').textContent = formatDate(addDays(nextBaseDate, 5));
+                document.getElementById('date-sat-next').textContent = formatDate(addDays(nextBaseDate, 6));
+            }
+        } else {
+            // If no valid next week date, treat rows 7-10 as the current week
+            document.getElementById('current-week-title').textContent = 'משמרות לשבוע זה';
+
+            // Show only the current week (rows 7-10)
+            const currentWeekRows = [rows[7], rows[8], rows[9]];
+            updateShiftTable(currentWeekRows, 'current');
         }
 
-        // Update the dates for the current week
-        if (document.getElementById('date-sun-current')) {
-            document.getElementById('date-sun-current').textContent = formatDate(currentBaseDate);
-            document.getElementById('date-mon-current').textContent = formatDate(addDays(currentBaseDate, 1));
-            document.getElementById('date-tue-current').textContent = formatDate(addDays(currentBaseDate, 2));
-            document.getElementById('date-wed-current').textContent = formatDate(addDays(currentBaseDate, 3));
-            document.getElementById('date-thu-current').textContent = formatDate(addDays(currentBaseDate, 4));
-            document.getElementById('date-fri-current').textContent = formatDate(addDays(currentBaseDate, 5));
-            document.getElementById('date-sat-current').textContent = formatDate(addDays(currentBaseDate, 6));
-        }
+        document.getElementById('status-message').textContent = 'הסידור מעודכן!';
+    } catch (error) {
+        document.getElementById('status-message').textContent = 'Error fetching data from Google Sheets: ' + error.message;
+        console.error('Error fetching data:', error);
+    }
+}
+
 
         // Function to format dates as dd.mm
         function formatDate(date) {
@@ -300,7 +332,7 @@ async function fetchShifts() {
             updateShiftCell(nightLoc2Shift[6], `sun-night-loc2-${weekType}`);
         }
 
-        document.getElementById('status-message').textContent = 'הסידור מעודכן!';
+        document.getElementById('status-message').textContent = 'הסידור מעודכן';
     } catch (error) {
         document.getElementById('status-message').textContent = 'Error fetching data from Google Sheets: ' + error.message;
         console.error('Error fetching data:', error);
