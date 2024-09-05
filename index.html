@@ -194,13 +194,8 @@ async function fetchShifts() {
             // If next week's schedule is present, swap H12 as the current date and H7 as the next week date
             currentSundayDateStr = nextSundayDateStr;
             const nextBaseDate = new Date(rows[6][7]?.trim()); // Next week Sunday date from H7
-            
-            // Show the next week's schedule
-            document.getElementById('next-week-table').style.display = 'block';
-            document.getElementById('current-week-title').textContent = 'משמרות לשבוע זה';
-            document.getElementById('next-week-title').textContent = 'משמרות לשבוע הבא';
 
-            // Update the dates for the next week
+            // Update the dates for the next week (second table)
             if (document.getElementById('date-sun-next')) {
                 document.getElementById('date-sun-next').textContent = formatDate(nextBaseDate);
                 document.getElementById('date-mon-next').textContent = formatDate(addDays(nextBaseDate, 1));
@@ -226,7 +221,7 @@ async function fetchShifts() {
                 throw new Error('Invalid date in H7');
             }
 
-            // Update the dates for the current week
+            // **Here is the fix**: Update the dates for the first table (current week)
             if (document.getElementById('date-sun-current')) {
                 document.getElementById('date-sun-current').textContent = formatDate(currentBaseDate);
                 document.getElementById('date-mon-current').textContent = formatDate(addDays(currentBaseDate, 1));
@@ -309,6 +304,7 @@ async function fetchShifts() {
         console.error('Error fetching data:', error);
     }
 }
+
 
 
     function highlightCurrentShift() {
