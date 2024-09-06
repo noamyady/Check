@@ -1,0 +1,41 @@
+name: Auto Build on Google Sheets Data Change
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Checks every hour
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Fetch Google Sheet Data
+      run: |
+        curl -o data.csv "https://docs.google.com/spreadsheets/d/1QhULkTx616YtArCdnBTENKwWQoQQLWRFf_m4fXf1Z0M/export?format=csv"
+
+    - name: Check for Data Changes
+      id: data_check
+      run: |
+        if git diff --exit-code --quiet; then
+          echo "No changes in the data."
+          exit 0
+        else
+          echo "Data has changed, proceeding to rebuild."
+        fi
+
+    - name: Commit and Push Changes
+      run: |
+        git config --global user.email "you@example.com"
+        git config --global user.name "Your Name"
+        git add data.csv
+        git commit -m "Updated data from Google Sheets"
+        git push
+
+    - name: Build and Deploy
+      run: |
+        npm install
+        npm run build
+        npm run deploy
