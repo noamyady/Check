@@ -164,7 +164,7 @@
 
     <script>
 async function fetchShifts() {
-    const csvUrl = 'https://raw.githubusercontent.com/noamyady/check/main/data.csv'; // URL to your data.csv file
+    const csvUrl = `https://raw.githubusercontent.com/noamyady/check/main/data.csv?v=${new Date().getTime()}`;
     document.getElementById('status-message').textContent = 'טוען...';
 
     try {
@@ -298,7 +298,7 @@ async function fetchShifts() {
             updateShiftTable(nextWeekRows, 'next');
         }
 
-        document.getElementById('status-message').textContent = 'הסידור מעודכן';
+        document.getElementById('status-message').textContent = 'מעודכן';
     } catch (error) {
         document.getElementById('status-message').textContent = 'Error fetching data from Google Sheets: ' + error.message;
         console.error('Error fetching data:', error);
