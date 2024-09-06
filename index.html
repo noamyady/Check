@@ -168,7 +168,7 @@ async function fetchShifts() {
     document.getElementById('status-message').textContent = 'טוען...';
 
     try {
-        const response = await fetch(sheetUrl);
+        const response = await fetch(csvUrl);
         if (!response.ok) {
             throw new Error('שגיאה - יש בעיה');
         }
